@@ -5,5 +5,7 @@ __pycache__/
 #package & data file
 .vscode
 aclImdB
+Data/*
+output/*
 Pipfile
 Pipfile.lock
