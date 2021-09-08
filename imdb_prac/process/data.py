@@ -1,10 +1,12 @@
 import torch
 from torch.utils.data import Dataset
+from torch.nn.utils.rnn import pad_sequence
 import os
 import logging
 from collections import namedtuple
 
 from imdb_prac.process.text import nlp_preprocess,nlp_potsprocess
+from imdb_prac.settings import Label_Mapping
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +26,7 @@ class ImdbDataset(Dataset):
 
         if self.mode=='train':
             text,label=self.data.iloc[idx,:2].values
+            label=Label_Mapping[label]
         else:
             text=self.data.iloc[idx,:1].values
 
@@ -35,8 +38,15 @@ class ImdbDataset(Dataset):
             sent,ents=nlp_preprocess(s,self.tokenizer)
             sent,ents=nlp_potsprocess(sent[:self.max_token],ents[:self.max_token],self.tokenizer)
 
+            #convert to tensor
+            sent=torch.tensor(sent,dtype=torch.short)
+            ents=torch.tensor(ents,dtype=torch.uint8)
             doc.append(sent)
             doc_ent.append(ents)
+
+        #tensor shape=[sent_n,self.max_token]
+        doc=pad_sequence(doc,batch_first=True)
+        doc_ent=pad_sequence(doc_ent,batch_first=True)
         
         return Example(text=doc,ents=doc_ent,label=label)
         
@@ -45,5 +55,21 @@ class ImdbDataset(Dataset):
 
 
 
+def collate_batch(examples):
+    texts,ents,labels=zip(*examples)
 
+    #pad sentnum for doc
+    texts=pad_sequence(texts,batch_first=True)
+    ents=pad_sequence(ents,batch_first=True)
+
+    #detect & handle dataset which has label or not
+    if labels[0]:
+        labels=torch.tensor(labels)
+    else:
+        labels=None
     
+    return {"text":texts,"ents":ents,"labels":labels}
+        
+        
+
+
