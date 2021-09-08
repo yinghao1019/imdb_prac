@@ -1,0 +1,9 @@
+#Byte-compile file
+__pycache__/
+
+
+#package & data file
+.vscode
+aclImdB
+Pipfile
+Pipfile.lock
