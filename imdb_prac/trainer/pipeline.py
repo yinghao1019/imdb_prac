@@ -24,8 +24,8 @@ class ModelPipeline:
         self.warm_scheduler=warm_scheduler
         self.scheduler=scheduler
 
-    def amp_training(self,epochs,save_path,save_epoch,blob,
-                     eval_func=None,max_norm=1,per_ep_eval=5):
+    def amp_training(self,epochs,save_epoch,blob,eval_func=None,
+                     max_norm=1,warm_step=5,per_ep_eval=5):
         """
         Training Model pipeline. Using Random sampling 
         to shuffle data.Also add lr_scheduler,amp_training,
@@ -45,7 +45,7 @@ class ModelPipeline:
         logger.info(f'Epochs:{epochs}')
         logger.info(f'Current lr:{self.optimizer.lr}')
         logger.info(f'lr warm epochs:{warm_step}')
-        logger.info(f'per_eval_epoch:{per_epoch_eval}')
+        logger.info(f'per_eval_epoch:{per_ep_eval}')
         logger.info(f'save steps:{save_epoch}')
 
 
@@ -78,9 +78,14 @@ class ModelPipeline:
                 # update weight & lr
                 scaler.step(self.optimizer)
                 scaler.update()
-                if self.scheduler:
-                    self.scheduler.step()
                 self.optimizer.zero_grad()  # clear grad
+
+
+            #update learning rate
+            if ep>warm_step:
+                self.scheduler.step()
+            else:
+                self.warm_scheduler.step()
 
             logger.info(f'[{ep+1}/{epochs}] training loss:\
                    {iter_loss/len(self.train_iter)}')
