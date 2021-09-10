@@ -33,7 +33,7 @@ def get_classMetrics(outputs, targets):
     eval_type = 'binary' if binary_c else 'weighted'
     # get correct label
     if binary_c:
-        preds = torch.where(outputs) >= 0.5, 1, 0)
+        preds = torch.where(outputs >= 0.5, 1, 0)
         preds = preds.squeeze(dim=1).cpu().detach().numpy()
     else:
         preds = torch.argmax(torch.ouputs).cpu().detach().numpy()
