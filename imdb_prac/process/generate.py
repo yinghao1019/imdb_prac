@@ -75,7 +75,7 @@ def main(args):
     if args.subparser_name=="data":
         load_path=os.path.join(args.src,args.type)
         create_csv(load_path,args.dst,args.num)
-        blob=bucket.blob(args.dst.split("\\",1)[-1])
+        blob=bucket.blob(args.dst.split("/",1)[-1])
         blob.upload_from_filename(args.dst)
 
     elif args.subparser_name=="token":
