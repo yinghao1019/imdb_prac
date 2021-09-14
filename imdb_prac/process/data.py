@@ -24,10 +24,10 @@ class ImdbDataset(Dataset):
         self.max_token = max_token
 
     def __getitem__(self, idx):
-        doc = []
-        doc_ent = []
-        #load data
-        text, label = self.data.iloc[idx, :2].values
+        # load data
+        doc_ids=[]
+        doc_ents=[]
+        text,label = self.data.iloc[idx, :2].values
         label = LABEL_MAPPING[label]
 
         # split doc to sent & nlp preprocess for each sent
@@ -35,21 +35,21 @@ class ImdbDataset(Dataset):
             # avoid exceed max sent num
             if n > self.sent_num:
                 break
-            sent, ents = nlp_preprocess(s, self.tokenizer)
-            sent, ents = nlp_potsprocess(
-                sent[:self.max_token], ents[:self.max_token], self.tokenizer)
+            sent, ents = nlp_preprocess(s,self.tokenizer)
 
-            # convert to tensor
-            sent = torch.tensor(sent, dtype=torch.short)
-            ents = torch.tensor(ents, dtype=torch.uint8)
-            doc.append(sent)
-            doc_ent.append(ents)
+            if sent or ents:
+                sent, ents = nlp_potsprocess(sent[:self.max_token],ents[:self.max_token], self.tokenizer)
 
-        # tensor shape=[sent_n,self.max_token]
-        doc = pad_sequence(doc, batch_first=True)
-        doc_ent = pad_sequence(doc_ent, batch_first=True)
+            sent = list(sent)+[0]*(self.max_token-len(sent))
+            ents = list(ents)+[0]*(self.max_token-len(ents))
 
-        return Example(text=doc, ents=doc_ent, label=label)
+            doc_ids.append(sent)
+            doc_ents.append(ents)
+        # convert to tensor
+        doc_ids = torch.tensor(doc_ids, dtype=torch.long)
+        doc_ents = torch.tensor(doc_ents, dtype=torch.long)
+
+        return Example(text=doc_ids, ents=doc_ents, label=label)
 
     def __len__(self):
         return self.data.shape[0]
@@ -63,11 +63,16 @@ def collate_batch(examples):
     ents = pad_sequence(ents, batch_first=True)
 
     # detect & handle dataset which has label or not
-    if labels[0]:
+    if labels[0] is not None:
         labels = torch.tensor(labels)
     else:
         labels = None
 
     return {"text": texts, "ents": ents, "labels": labels}
+
+
+
+
+
 
 

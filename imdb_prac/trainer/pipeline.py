@@ -1,12 +1,12 @@
 from torch.utils.data import DataLoader, SequentialSampler, RandomSampler
 from torch.cuda.amp import GradScaler,autocast
 from torch.nn.utils import clip_grad_norm_
-from tqdm import tqdm
 from collections import defaultdict
 import torch
 import logging
+import tqdm
 import io
-
+import time
 from imdb_prac.utils import count_parameters
 
 logger = logging.getLogger(__name__)
@@ -17,15 +17,15 @@ class ModelPipeline:
 
     def __init__(self, train_iter, val_iter, model,optimizer,
                  warm_scheduler,scheduler):
-        self.train_data = train_iter
-        self.val_data = val_iter
+        self.train_iter = train_iter
+        self.val_iter = val_iter
         self.model = model
         self.optimizer=optimizer
         self.warm_scheduler=warm_scheduler
         self.scheduler=scheduler
-
+        self.device=torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
     def amp_training(self,epochs,save_epoch,blob,eval_func=None,
-                     max_norm=1,warm_step=5,per_ep_eval=5):
+                     max_norm=1,warm_step=5,per_ep_eval=1):
         """
         Training Model pipeline. Using Random sampling 
         to shuffle data.Also add lr_scheduler,amp_training,
@@ -43,7 +43,7 @@ class ModelPipeline:
         logger.info(f'Train example nums:{len(self.train_iter.dataset)}')
         logger.info(f'Batch size:{self.train_iter.batch_size}')
         logger.info(f'Epochs:{epochs}')
-        logger.info(f'Current lr:{self.optimizer.lr}')
+        logger.info(f'Current lr:{self.optimizer.defaults["lr"]}')
         logger.info(f'lr warm epochs:{warm_step}')
         logger.info(f'per_eval_epoch:{per_ep_eval}')
         logger.info(f'save steps:{save_epoch}')
@@ -56,11 +56,11 @@ class ModelPipeline:
             # build iter pipe
             iter_loss = 0
             self.model.train()
-            for b in self.train_iter:
-
+            iter_pgb=tqdm.tqdm(self.train_iter)
+            for b in iter_pgb:
                 #put batch example in gpu
                 if next(self.model.parameters()).is_cuda:
-                    inputs={k:v.to(self.device) for k,v in b.items() if v}
+                    inputs={k:v.to(self.device) for k,v in b.items() if v is not None}
 
                 with autocast():
                     output, loss = self.model(**inputs)
@@ -79,7 +79,6 @@ class ModelPipeline:
                 scaler.step(self.optimizer)
                 scaler.update()
                 self.optimizer.zero_grad()  # clear grad
-
 
             #update learning rate
             if ep>warm_step:
@@ -103,7 +102,9 @@ class ModelPipeline:
                 logger.info(f'Eval metrics for trained model in {ep+1}')
                 for k, v in metrics.items():
                     logger.info(f'{k}:{v}')
-                
+            iter_pgb.close()
+            
+        epoch_pgb.close()
     def evaluate_model(self, data_iter, eval_func):
         eval_loss = 0
         val_pgb = tqdm.tqdm(data_iter)
@@ -113,13 +114,13 @@ class ModelPipeline:
         for b in val_pgb:
             with torch.no_grad():
                 if next(self.model.parameters()).is_cuda:
-                    inputs={k:v.to(self.device) for k,v in b.items() if v}
+                    inputs={k:v.to(self.device) for k,v in b.items() if v is not None}
                 with autocast():
                     outputs, loss = self.model(**inputs)
 
             eval_loss += loss.item()
             # eval
-            batch_metrics = eval_func(outputs, inputs["label"])
+            batch_metrics = eval_func(outputs, inputs["labels"])
             # update metrics
             for n, v in batch_metrics.items():
                 total_metrics[n] += v

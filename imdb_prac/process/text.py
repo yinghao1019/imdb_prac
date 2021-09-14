@@ -4,9 +4,7 @@ import spacy
 import re
 
 from imdb_prac.settings import ENTITY_MAPPINGS
-
 # build spacy model for procees text
-spacy.require_gpu()
 en_nlp = spacy.load("en_core_web_md")
 
 
@@ -36,7 +34,7 @@ def nlp_preprocess(text, tokenizer):
             words = tokenizer.encode(words, is_pretokenized=True).tokens
             tokens.extend(words)
             if t.ent_type_:
-                ents.extend([t.ent_type_+t.ent_iob_]*len(words))
+                ents.extend([t.ent_type_+"_"+t.ent_iob_]*len(words))
             else:
                 ents.extend(["O"]*len(words))
 
@@ -48,6 +46,7 @@ def nlp_preprocess(text, tokenizer):
 
 def nlp_potsprocess(tokens, ents, tokenizer):
     texts = []
+    
     for t, e in zip(tokens, ents):
         texts.append((tokenizer.token_to_id(t), ENTITY_MAPPINGS[e]))
-    return texts
+    return zip(*texts)
