@@ -58,13 +58,14 @@ class ModelPipeline:
             self.model.train()
             iter_pgb=tqdm.tqdm(self.train_iter)
             for b in iter_pgb:
+               
                 #put batch example in gpu
                 if next(self.model.parameters()).is_cuda:
                     inputs={k:v.to(self.device) for k,v in b.items() if v is not None}
 
                 with autocast():
                     output, loss = self.model(**inputs)
-
+                
                 iter_loss += loss.item()
 
                 # avoid grad underflow
@@ -93,8 +94,8 @@ class ModelPipeline:
             if (ep+1)%save_epoch==0:
                 logger.info(f"save model to gcloud {blob.name}")
                 buffer=io.BytesIO()
-                torch.save(self.model,buffer)
-                blob.upload_from_file(buffer)
+                torch.save(self.model.state_dict(),buffer)
+                blob.upload_from_file(buffer,rewind=True)
 
              # evaluate model
             if (per_ep_eval > 0) and ((ep+1) % per_ep_eval == 0):
@@ -124,6 +125,8 @@ class ModelPipeline:
             # update metrics
             for n, v in batch_metrics.items():
                 total_metrics[n] += v
+        val_pgb.close()
+
         # scale for epoch level
         total_metrics['eval_loss'] = eval_loss
         for k, v in total_metrics.items():

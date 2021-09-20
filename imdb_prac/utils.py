@@ -43,8 +43,6 @@ def get_classMetrics(outputs, targets):
         preds = torch.argmax(outputs).cpu().detach().numpy()
 
     labels = targets.cpu().detach().numpy()  # get correct label
-    print(labels)
-    print(preds)
     acc = accuracy_score(labels, preds)
     f_score = f1_score(labels, preds, average=eval_type)
     precision = precision_score(labels, preds, average=eval_type)

@@ -14,7 +14,7 @@ import os
 
 from imdb_prac.settings import *
 from imdb_prac.process.text import rm_punct, strip_html, en_nlp,nlp_preprocess
-from utils import load_data,load_tokenizer
+from imdb_prac.utils import load_data,load_tokenizer
 
 # get module name to log message
 logger = logging.getLogger(__name__)

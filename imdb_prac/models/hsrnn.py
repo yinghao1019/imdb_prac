@@ -92,7 +92,7 @@ class HierAttentionRNN(NN.Module):
             hiddens = self.relu(l(hiddens))
 
         # compute output prob
-        # outputs=[Bs,1]
+        # outputs=[Bs,]
         outputs = self.output_layer(hiddens).squeeze(1)
 
         loss = None
