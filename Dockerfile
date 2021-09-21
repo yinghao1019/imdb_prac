@@ -38,10 +38,10 @@ RUN  pip install -r requirements.txt
 
 #set variable for load cloud data & run
 ENV CLOUD_BUCKET imdbml
-ENV CLOUD_ML_PROJECT_ID mlprac-321407
-ENV CLOUD_TRAINDATA_PATH gs://${CLOUD_BUCKET}/Data/imdb_train.csv
-ENV CLOUD_TESTDATA_PATH gs://${CLOUD_BUCKET}/Data/imdb_test.csv
-ENV CLOUD_TOKENIZER_PATH gs://${CLOUD_BUCKET}/tokenizer/imdb_token.txt
+ENV CLOUD_ML_PROJECT_ID ${your_project_id}
+ENV CLOUD_TRAINDATA_PATH ${your_cloud_storage_path}
+ENV CLOUD_TESTDATA_PATH ${your_cloud_storage_path}
+ENV CLOUD_TOKENIZER_PATH ${your_cloud_storage_path}
 ENV PYTHONPATH .
 
 # Sets up the entry point to invoke the trainer.

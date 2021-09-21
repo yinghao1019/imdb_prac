@@ -3,8 +3,8 @@ from os import path
 BASE_DIR=path.abspath(path.dirname(path.dirname(__file__)))
 #envirmonent settings with google cloud
 AIP_MODEL_DIR=os.environ.get("AIP_MODEL_DIR")
-BUCKET_NAME=os.environ.get("CLOUD_BUCKET","imdbml")
-PROJECT_ID=os.environ.get("CLOUD_ML_PROJECT_ID","mlprac-321407")
+BUCKET_NAME=os.environ.get("CLOUD_BUCKET")
+PROJECT_ID=os.environ.get("CLOUD_ML_PROJECT_ID")
 CLOUD_TRAINDATA_PATH=os.environ.get("CLOUD_TRAINDATA_PATH")
 CLOUD_TESTDATA_PATH=os.environ.get("CLOUD_TESTDATA_PATH")
 CLOUD_TOKENIZER_PATH=os.environ.get("CLOUD_TOKENIZER_PATH")
