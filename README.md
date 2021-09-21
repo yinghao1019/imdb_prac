@@ -3,7 +3,7 @@
 
 ## **Project Articture**
 ### **Main part & flow**
- ![Repo](https://imgur.com/gallery/KZoRK63)
+ ![Repo](https://i.imgur.com/3n6ImYg.jpg)
 
 * Generate : Prepare clean data in csv format & trained tokenizer before training Model.If you don't have any file, this will be required.  
 
@@ -50,7 +50,7 @@
 
 
 ### **Model Articture**
-![Model](https://imgur.com/gallery/LIKMViZ)
+![Model](https://i.imgur.com/Ktk23tj.jpg)
 
 * Main articture :We use two level encoder to extract feature.So in the first step,must split whole text to each sent.In addition,also use NER tagger to extract linguistic feature.And we concat it over embed feature.At sent level encoder,we use it to extract each sent context feature,and in Document level encoder,we convert seq of sent context to one vector for after fully connected layer.
 
@@ -128,7 +128,7 @@ service-Vertex ai to create custom training.PLease click this link to know more 
 
 ## **Learn More**
 After you training ,if you want to serve for other application,please follow below link.
-[Deploy trained model service with Vertex Ai]()
+[Deploy trained model service with Vertex Ai](https://github.com/yinghao1019/imdb_infer)
 
 ## **Contact**
 Ying Hao Hung-1104137203@gmail.com
