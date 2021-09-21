@@ -127,7 +127,8 @@ service-Vertex ai to create custom training.PLease click this link to know more 
     Please read [Work with container Image](https://cloud.google.com/artifact-registry/docs/docker) to know how to use.
 
 ## **Learn More**
-[Deploy your trained model to serve prediction with Vertex Ai]()
+After you training ,if you want to serve for other application,please follow below link.
+[Deploy trained model service with Vertex Ai]()
 
 ## **Contact**
 Ying Hao Hung-1104137203@gmail.com
